@@ -5,7 +5,6 @@ load_dotenv()
 
 class Config:
     OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-    AWS_ACCESS_KEY = os.getenv('AWS_ACCESS_KEY')
-    AWS_SECRET_KEY = os.getenv('AWS_SECRET_KEY')
-    AWS_BUCKET_NAME = os.getenv('AWS_BUCKET_NAME')
+    AZURE_STORAGE_CONNECTION_STRING = os.getenv('AZURE_STORAGE_CONNECTION_STRING')
+    AZURE_CONTAINER_NAME = os.getenv('AZURE_CONTAINER_NAME')
     VECTOR_DB_PATH = 'vector_db'

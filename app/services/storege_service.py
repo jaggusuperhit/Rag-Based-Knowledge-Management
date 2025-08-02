@@ -1,28 +1,29 @@
-import boto3
-from botocore.exceptions import ClientError
+from azure.storage.blob import BlobServiceClient
+from azure.core.exceptions import ResourceNotFoundError, ServiceRequestError
 from config import Config
 
-class S3Storage:
+class AzureStorage:
     def __init__(self):
-        self.s3 = boto3.client(
-            's3',
-            aws_access_key_id=Config.AWS_ACCESS_KEY,
-            aws_secret_access_key=Config.AWS_SECRET_KEY
-        )
-        self.bucket = Config.AWS_BUCKET_NAME
+        self.blob_service_client = BlobServiceClient.from_connection_string(Config.AZURE_STORAGE_CONNECTION_STRING)
+        self.container_client = self.blob_service_client.get_container_client(Config.AZURE_CONTAINER_NAME)
 
     def upload_file(self, file_obj, filename):
         try:
-            self.s3.upload_fileobj(file_obj, self.bucket, filename)
+            blob_client = self.container_client.get_blob_client(filename)
+            blob_client.upload_blob(file_obj)
             return True
-        except ClientError as e:
+        except ServiceRequestError as e:
             print(f"Error uploading file: {e}")
             return False
 
     def get_file(self, filename):
         try:
-            response = self.s3.get_object(Bucket=self.bucket, Key=filename)
-            return response['Body']
-        except ClientError as e:
+            blob_client = self.container_client.get_blob_client(filename)
+            blob_data = blob_client.download_blob()
+            return blob_data.content_as_bytes()
+        except ResourceNotFoundError as e:
+            print(f"File not found: {e}")
+            return None
+        except ServiceRequestError as e:
             print(f"Error retrieving file: {e}")
             return None

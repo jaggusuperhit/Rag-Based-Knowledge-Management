@@ -1,6 +1,6 @@
 from flask import Flask, request, render_template, jsonify
 from models.vector_store import VectorStore
-from services.storage_service import S3Storage
+from services.azure_storage_service import AzureStorage
 from services.llm_service import LLMService
 from config import Config
 import os
@@ -9,12 +9,9 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 import tempfile
 import logging
 
-# add code for donwload .env from gdrive - refer chatgpt
-
-
 app = Flask(__name__)
 vector_store = VectorStore(Config.VECTOR_DB_PATH)
-storage_service = S3Storage()
+storage_service = AzureStorage()
 llm_service = LLMService(vector_store)
 
 @app.route('/')
@@ -91,14 +88,14 @@ def upload_document():
             logger.error(f"Error processing document: {str(e)}")
             return jsonify({'error': f'Error processing document: {str(e)}'}), 500
 
-        # Upload to S3
+        # Upload to Azure Storage
         try:
             file.seek(0)  # Reset file pointer
             storage_service.upload_file(file, file.filename)
-            logger.debug("File uploaded to S3")
+            logger.debug("File uploaded to Azure Storage")
         except Exception as e:
-            logger.error(f"Error uploading to S3: {str(e)}")
-            return jsonify({'error': f'Error uploading to S3: {str(e)}'}), 500
+            logger.error(f"Error uploading to Azure Storage: {str(e)}")
+            return jsonify({'error': f'Error uploading to Azure Storage: {str(e)}'}), 500
 
         # Add to vector store
         try:
